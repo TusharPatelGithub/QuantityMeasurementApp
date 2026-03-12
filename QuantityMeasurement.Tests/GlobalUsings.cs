@@ -1,8 +1,13 @@
-// UC10: Global type aliases for backward compatibility in the test project
-// Ensures all UC1–UC9 test code referencing QuantityLength and QuantityWeight works unchanged.
-global using QuantityLength = QuantityMeasurement.Models.Quantity<QuantityMeasurement.Models.LengthUnit>;
-global using QuantityWeight = QuantityMeasurement.Models.Quantity<QuantityMeasurement.Models.WeightUnit>;
-// UC11: QuantityVolume alias for volume measurement support
-global using QuantityVolume = QuantityMeasurement.Models.Quantity<QuantityMeasurement.Models.VolumeUnit>;
-// UC14: QuantityTemperature alias for temperature measurement support
-global using QuantityTemperature = QuantityMeasurement.Models.Quantity<QuantityMeasurement.Models.TemperatureUnit>;
+// UC10: Global type aliases for backward compatibility
+// Updated to reference models from ModelLayer
+
+global using ModelLayer.Models;
+
+global using QuantityLength = ModelLayer.Models.Quantity<ModelLayer.Models.LengthUnit>;
+global using QuantityWeight = ModelLayer.Models.Quantity<ModelLayer.Models.WeightUnit>;
+
+// UC11: QuantityVolume alias
+global using QuantityVolume = ModelLayer.Models.Quantity<ModelLayer.Models.VolumeUnit>;
+
+// UC14: QuantityTemperature alias
+global using QuantityTemperature = ModelLayer.Models.Quantity<ModelLayer.Models.TemperatureUnit>;

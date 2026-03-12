@@ -1,5 +1,5 @@
-using QuantityMeasurement.Models;
-using QuantityMeasurement.Services;
+using ModelLayer.Models;
+using BusinessLayer.Services;
 namespace QuantityMeasurement.Tests
 {
     public class QuantityMeasurementAppTest

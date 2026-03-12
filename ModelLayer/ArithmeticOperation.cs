@@ -1,4 +1,4 @@
-namespace QuantityMeasurement.Models
+namespace ModelLayer.Models
 {
     // UC13: ArithmeticOperation sealed class — enum-based operation dispatch using lambda expressions.
     //Lambda Expression Pattern:

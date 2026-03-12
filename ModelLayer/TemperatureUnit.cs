@@ -1,4 +1,4 @@
-namespace QuantityMeasurement.Models
+namespace ModelLayer.Models
 {
     // UC14: TemperatureUnit sealed class implementing IMeasurable — supports Celsius and Fahrenheit.
     // Unlike LengthUnit, WeightUnit, and VolumeUnit which use LINEAR conversion (value * factor),

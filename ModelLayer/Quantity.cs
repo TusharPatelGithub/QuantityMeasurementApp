@@ -1,4 +1,4 @@
-namespace QuantityMeasurement.Models
+namespace ModelLayer.Models
 {
     //generic Quantity&lt;U&gt; class that works with any measurement category through the IMeasurable interface.
     //replaces both QuantityLength and QuantityWeight — logic is implemented ONCE and reused across all categories.

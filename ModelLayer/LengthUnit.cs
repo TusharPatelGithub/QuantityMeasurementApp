@@ -1,4 +1,4 @@
-namespace QuantityMeasurement.Models
+namespace ModelLayer.Models
 {
     //LengthUnit is a sealed class implementing IMeasurable, replacing the previous enum.
     //Each static readonly instance represents a supported length unit with its conversion factor relative to the base unit (feet).

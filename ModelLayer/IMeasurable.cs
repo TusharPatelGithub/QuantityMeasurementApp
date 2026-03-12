@@ -1,4 +1,4 @@
-namespace QuantityMeasurement.Models
+namespace ModelLayer.Models
 {
     //IMeasurable interface defines the contract for all measurement unit types.
     //any unit enum/class (LengthUnit, WeightUnit, VolumeUnit, etc.) must implement this interface. 

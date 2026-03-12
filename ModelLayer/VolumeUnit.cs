@@ -1,4 +1,4 @@
-namespace QuantityMeasurement.Models
+namespace ModelLayer.Models
 {
     //VolumeUnit is a sealed class implementing IMeasurable for volume measurements.
     //Each static readonly instance represents a supported volume unit with its conversion factor relative to the base unit (litre). 
