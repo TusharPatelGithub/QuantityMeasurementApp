@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # QuantityMeasurementApp
 
 ## Project Overview
@@ -86,3 +87,6 @@ All commits follow the format:
 - No unnecessary commented-out code
 - Proper exception handling
 - Meaningful class, method, and variable names
+=======
+
+>>>>>>> feature/UC15-NTierArchitecture
