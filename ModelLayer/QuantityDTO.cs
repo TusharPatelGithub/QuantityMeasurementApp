@@ -1,5 +1,5 @@
 namespace ModelLayer.Models;
-
+using ModelLayer.Models;
 public class QuantityDTO
 {
     public double Value { get; set; }
