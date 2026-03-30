@@ -1,4 +1,3 @@
-ï»¿using ModelLayer.Models;
 using BusinessLayer.Services;
 namespace QuantityMeasurement
 {
@@ -30,7 +29,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Result: Equal ({isEqualSameValue})");
             Console.WriteLine();
         }
-        // UC10: Generic equality demonstration â€” works with ANY measurement category
+        // UC10: Generic equality demonstration — works with ANY measurement category
         // Replaces both DemonstrateLengthEquality and DemonstrateWeightEquality
         // Single method handles all categories through polymorphism
         public static void DemonstrateEquality<U>(Quantity<U> first, Quantity<U> second) where U : class, IMeasurable
@@ -40,14 +39,14 @@ namespace QuantityMeasurement
             Console.WriteLine($"Result: Equal ({isEqual})");
             Console.WriteLine();
         }
-        // UC10: Generic comparison from raw values â€” works with ANY measurement category
+        // UC10: Generic comparison from raw values — works with ANY measurement category
         public static void DemonstrateComparison<U>(double firstValue, U firstUnit, double secondValue, U secondUnit) where U : class, IMeasurable
         {
             Quantity<U> first = new Quantity<U>(firstValue, firstUnit);
             Quantity<U> second = new Quantity<U>(secondValue, secondUnit);
             DemonstrateEquality(first, second);
         }
-        // UC10: Generic conversion demonstration â€” works with ANY measurement category
+        // UC10: Generic conversion demonstration — works with ANY measurement category
         // Replaces both DemonstrateLengthConversion and DemonstrateWeightConversion
         public static void DemonstrateConversion<U>(double value, U fromUnit, U toUnit) where U : class, IMeasurable
         {
@@ -56,7 +55,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Result: {convertedValue}");
             Console.WriteLine();
         }
-        // UC10: Generic addition demonstration â€” works with ANY measurement category
+        // UC10: Generic addition demonstration — works with ANY measurement category
         // Replaces both DemonstrateLengthAddition and DemonstrateWeightAddition
         public static void DemonstrateAddition<U>(double value1, U unit1, double value2, U unit2) where U : class, IMeasurable
         {
@@ -67,7 +66,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Result: {result}");
             Console.WriteLine();
         }
-        // UC10: Generic addition with explicit target unit â€” works with ANY measurement category
+        // UC10: Generic addition with explicit target unit — works with ANY measurement category
         public static void DemonstrateAddition<U>(double value1, U unit1, double value2, U unit2, U targetUnit) where U : class, IMeasurable
         {
             Quantity<U> first = new Quantity<U>(value1, unit1);
@@ -77,7 +76,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Result: {result}");
             Console.WriteLine();
         }
-        // UC12: Generic subtraction demonstration â€” works with ANY measurement category
+        // UC12: Generic subtraction demonstration — works with ANY measurement category
         public static void DemonstrateSubtraction<U>(double value1, U unit1, double value2, U unit2) where U : class, IMeasurable
         {
             Quantity<U> first = new Quantity<U>(value1, unit1);
@@ -97,7 +96,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Result: {result}");
             Console.WriteLine();
         }
-        // UC12: Generic division demonstration â€” works with ANY measurement category
+        // UC12: Generic division demonstration — works with ANY measurement category
         // Division returns a dimensionless double (ratio), not a Quantity
         public static void DemonstrateDivision<U>(double value1, U unit1, double value2, U unit2) where U : class, IMeasurable
         {
@@ -121,18 +120,18 @@ namespace QuantityMeasurement
             DemonstrateFeetEquality();
             DemonstrateInchesEquality();
 
-            // UC3/UC4: Cross-unit length equality â€” using generic DemonstrateComparison
+            // UC3/UC4: Cross-unit length equality — using generic DemonstrateComparison
             Console.WriteLine("--- Cross-Unit Length Equality (UC3/UC4) ---");
             Console.WriteLine();
             DemonstrateComparison(1.0, LengthUnit.FEET, 12.0, LengthUnit.INCH);
             DemonstrateComparison(36.0, LengthUnit.INCH, 1.0, LengthUnit.YARDS);
 
-            // UC5: Length conversion â€” using generic DemonstrateConversion
+            // UC5: Length conversion — using generic DemonstrateConversion
             Console.WriteLine("--- Length Conversion (UC5) ---");
             Console.WriteLine();
             DemonstrateConversion(1.0, LengthUnit.FEET, LengthUnit.INCH);
 
-            // UC6/UC7: Length addition â€” using generic DemonstrateAddition
+            // UC6/UC7: Length addition — using generic DemonstrateAddition
             Console.WriteLine("--- Length Addition (UC6/UC7) ---");
             Console.WriteLine();
             DemonstrateAddition(1.0, LengthUnit.FEET, 12.0, LengthUnit.INCH);
@@ -143,7 +142,7 @@ namespace QuantityMeasurement
             double inchBaseValue = LengthUnit.INCH.ConvertToBaseUnit(12.0);
             Console.WriteLine($"LengthUnit.INCH.ConvertToBaseUnit(12.0) = {inchBaseValue}");
             Console.WriteLine();
-            // UC9: Weight â€” using SAME generic methods as length
+            // UC9: Weight — using SAME generic methods as length
             Console.WriteLine("--- Weight Equality (UC9 via Generic) ---");
             Console.WriteLine();
             DemonstrateComparison(1.0, WeightUnit.KILOGRAM, 1.0, WeightUnit.KILOGRAM);
@@ -156,7 +155,7 @@ namespace QuantityMeasurement
             Console.WriteLine();
             DemonstrateAddition(1.0, WeightUnit.KILOGRAM, 1000.0, WeightUnit.GRAM);
             DemonstrateAddition(1.0, WeightUnit.KILOGRAM, 1000.0, WeightUnit.GRAM, WeightUnit.GRAM);
-            // UC10: Cross-category prevention â€” type safety
+            // UC10: Cross-category prevention — type safety
             Console.WriteLine("--- Cross-Category Type Safety (UC10) ---");
             Console.WriteLine();
             QuantityLength oneFoot = new QuantityLength(1.0, LengthUnit.FEET);
@@ -165,7 +164,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Comparing {oneKg} (weight) and {oneFoot} (length)");
             Console.WriteLine($"Result: Equal ({crossCategoryEqual})");
             Console.WriteLine();
-            // UC11: Volume Measurement â€” using SAME generic methods (validates UC10 scalability)
+            // UC11: Volume Measurement — using SAME generic methods (validates UC10 scalability)
             Console.WriteLine("--- Volume Equality (UC11 via Generic) ---");
             Console.WriteLine();
             DemonstrateComparison(1.0, VolumeUnit.LITRE, 1.0, VolumeUnit.LITRE);
@@ -181,7 +180,7 @@ namespace QuantityMeasurement
             DemonstrateAddition(1.0, VolumeUnit.LITRE, 2.0, VolumeUnit.LITRE);
             DemonstrateAddition(1.0, VolumeUnit.LITRE, 1000.0, VolumeUnit.MILLILITRE);
             DemonstrateAddition(1.0, VolumeUnit.LITRE, 1000.0, VolumeUnit.MILLILITRE, VolumeUnit.MILLILITRE);
-            // UC11: Cross-category incompatibility â€” volume vs length and weight
+            // UC11: Cross-category incompatibility — volume vs length and weight
             Console.WriteLine("--- Volume Cross-Category Safety (UC11) ---");
             Console.WriteLine();
             QuantityVolume oneLitre = new QuantityVolume(1.0, VolumeUnit.LITRE);
@@ -193,7 +192,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Comparing {oneLitre} (volume) and {oneKg} (weight)");
             Console.WriteLine($"Result: Equal ({volumeVsWeight})");
             Console.WriteLine();
-            // UC12: Subtraction â€” across all measurement categories
+            // UC12: Subtraction — across all measurement categories
             Console.WriteLine("--- Subtraction (UC12) ---");
             Console.WriteLine();
             DemonstrateSubtraction(10.0, LengthUnit.FEET, 6.0, LengthUnit.INCH);
@@ -203,21 +202,21 @@ namespace QuantityMeasurement
             Console.WriteLine();
             DemonstrateSubtraction(10.0, LengthUnit.FEET, 6.0, LengthUnit.INCH, LengthUnit.INCH);
             DemonstrateSubtraction(5.0, VolumeUnit.LITRE, 2.0, VolumeUnit.LITRE, VolumeUnit.MILLILITRE);
-            // UC12: Division â€” across all measurement categories
+            // UC12: Division — across all measurement categories
             Console.WriteLine("--- Division (UC12) ---");
             Console.WriteLine();
             DemonstrateDivision(10.0, LengthUnit.FEET, 2.0, LengthUnit.FEET);
             DemonstrateDivision(24.0, LengthUnit.INCH, 2.0, LengthUnit.FEET);
             DemonstrateDivision(10.0, WeightUnit.KILOGRAM, 5.0, WeightUnit.KILOGRAM);
             DemonstrateDivision(5.0, VolumeUnit.LITRE, 10.0, VolumeUnit.LITRE);
-            // UC14: Temperature Equality â€” using SAME generic DemonstrateComparison
+            // UC14: Temperature Equality — using SAME generic DemonstrateComparison
             Console.WriteLine("--- Temperature Equality (UC14 via Generic) ---");
             Console.WriteLine();
             DemonstrateComparison(0.0, TemperatureUnit.CELSIUS, 0.0, TemperatureUnit.CELSIUS);
             DemonstrateComparison(100.0, TemperatureUnit.CELSIUS, 212.0, TemperatureUnit.FAHRENHEIT);
             DemonstrateComparison(0.0, TemperatureUnit.CELSIUS, 32.0, TemperatureUnit.FAHRENHEIT);
             DemonstrateComparison(-40.0, TemperatureUnit.CELSIUS, -40.0, TemperatureUnit.FAHRENHEIT);
-            // UC14: Temperature Conversion â€” using SAME generic DemonstrateConversion
+            // UC14: Temperature Conversion — using SAME generic DemonstrateConversion
             Console.WriteLine("--- Temperature Conversion (UC14 via Generic) ---");
             Console.WriteLine();
             DemonstrateConversion(100.0, TemperatureUnit.CELSIUS, TemperatureUnit.FAHRENHEIT);
@@ -239,7 +238,7 @@ namespace QuantityMeasurement
             Console.WriteLine($"Comparing {hundredCelsius} (temperature) and {oneLitre} (volume)");
             Console.WriteLine($"Result: Equal ({tempVsVolume})");
             Console.WriteLine();
-            // UC14: Temperature Unsupported Operations â€” demonstrating error handling
+            // UC14: Temperature Unsupported Operations — demonstrating error handling
             Console.WriteLine("--- Temperature Unsupported Operations (UC14) ---");
             Console.WriteLine();
             QuantityTemperature temp1 = new QuantityTemperature(100.0, TemperatureUnit.CELSIUS);
@@ -273,8 +272,8 @@ namespace QuantityMeasurement
             }
             // UC14: Operation support methods demonstration
             // Note: Default interface methods in C# must be called through the interface type.
-            // LengthUnit/WeightUnit/VolumeUnit inherit the default SupportsArithmetic() â†’ true from IMeasurable.
-            // TemperatureUnit explicitly overrides SupportsArithmetic() â†’ false.
+            // LengthUnit/WeightUnit/VolumeUnit inherit the default SupportsArithmetic() ? true from IMeasurable.
+            // TemperatureUnit explicitly overrides SupportsArithmetic() ? false.
             Console.WriteLine("--- Operation Support Methods (UC14) ---");
             Console.WriteLine();
             Console.WriteLine($"LengthUnit.FEET.SupportsArithmetic(): {((IMeasurable)LengthUnit.FEET).SupportsArithmetic()}");
@@ -289,3 +288,4 @@ namespace QuantityMeasurement
         }
     }
 }
+

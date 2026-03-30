@@ -1,7 +1,10 @@
+using BusinessLayer.Exceptions;
+using ModelLayer.DTOs;
 using ModelLayer.Entities;
 using ModelLayer.Models;
 using BusinessLayer.Services;
 using RepositoryLayer.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace QuantityMeasurement.Tests;
 
@@ -14,13 +17,19 @@ public class MockQuantityMeasurementRepository : IQuantityMeasurementRepository
 
     public List<QuantityMeasurementEntity> GetAllMeasurements() => new(_store);
 
-    public List<QuantityMeasurementEntity> GetMeasurementsByOperation(string op) =>
-        _store.Where(e => e.OperationType == op).ToList();
+    public List<QuantityMeasurementEntity> GetMeasurementsByOperation(string operationType) =>
+        _store.Where(e => e.OperationType == operationType).ToList();
 
-    public List<QuantityMeasurementEntity> GetMeasurementsByType(string type) =>
-        _store.Where(e => e.MeasurementType == type).ToList();
+    public List<QuantityMeasurementEntity> GetMeasurementsByType(string measurementType) =>
+        _store.Where(e => e.MeasurementType == measurementType).ToList();
 
     public int GetTotalCount() => _store.Count;
+
+    public int CountByOperation(string operationType) =>
+        _store.Count(e => e.OperationType == operationType);
+
+    public List<QuantityMeasurementEntity> GetErrorMeasurements() =>
+        _store.Where(e => e.HasError).ToList();
 
     public void DeleteAll() => _store.Clear();
 }
@@ -33,7 +42,7 @@ public class ServiceLayerTest
     public ServiceLayerTest()
     {
         _mockRepo = new MockQuantityMeasurementRepository();
-        _service = new QuantityMeasurementServiceImpl(_mockRepo);
+        _service = new QuantityMeasurementServiceImpl(_mockRepo, new NullLogger<QuantityMeasurementServiceImpl>());
     }
 
     // ==================== Compare Tests ====================
@@ -43,7 +52,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "FEET", "Length");
         var second = new QuantityDTO(12.0, "INCH", "Length");
-        Assert.True(_service.Compare(first, second));
+        var result = _service.Compare(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Result); // Result is 1 for equal
     }
 
     [Fact]
@@ -51,7 +62,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "FEET", "Length");
         var second = new QuantityDTO(5.0, "INCH", "Length");
-        Assert.False(_service.Compare(first, second));
+        var result = _service.Compare(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(0, result.Result); // Result is 0 for not equal
     }
 
     [Fact]
@@ -59,7 +72,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "KILOGRAM", "Weight");
         var second = new QuantityDTO(1000.0, "GRAM", "Weight");
-        Assert.True(_service.Compare(first, second));
+        var result = _service.Compare(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Result);
     }
 
     [Fact]
@@ -67,7 +82,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "LITRE", "Volume");
         var second = new QuantityDTO(1000.0, "MILLILITRE", "Volume");
-        Assert.True(_service.Compare(first, second));
+        var result = _service.Compare(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Result);
     }
 
     [Fact]
@@ -75,7 +92,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(100.0, "CELSIUS", "Temperature");
         var second = new QuantityDTO(212.0, "FAHRENHEIT", "Temperature");
-        Assert.True(_service.Compare(first, second));
+        var result = _service.Compare(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Result);
     }
 
     [Fact]
@@ -83,7 +102,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "FEET", "Length");
         var second = new QuantityDTO(1.0, "KILOGRAM", "Weight");
-        Assert.False(_service.Compare(first, second));
+        Assert.Throws<MeasurementTypeMismatchException>(() => _service.Compare(first, second));
     }
 
     [Fact]
@@ -93,7 +112,7 @@ public class ServiceLayerTest
         var second = new QuantityDTO(12.0, "INCH", "Length");
         _service.Compare(first, second);
         Assert.Equal(1, _mockRepo.GetTotalCount());
-        Assert.Equal("Compare", _mockRepo.GetAllMeasurements()[0].OperationType);
+        Assert.Equal("COMPARE", _mockRepo.GetAllMeasurements()[0].OperationType);
     }
 
     [Fact]
@@ -101,7 +120,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "FEET", "Speed");
         var second = new QuantityDTO(1.0, "FEET", "Speed");
-        Assert.Throws<NotSupportedException>(() => _service.Compare(first, second));
+        Assert.Throws<InvalidMeasurementTypeException>(() => _service.Compare(first, second));
     }
 
     // ==================== Convert Tests ====================
@@ -111,7 +130,8 @@ public class ServiceLayerTest
     {
         var quantity = new QuantityDTO(1.0, "FEET", "Length");
         var result = _service.Convert(quantity, "INCH");
-        Assert.Equal(12.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(12.0, result.Result, 6);
         Assert.Equal("INCH", result.Unit);
         Assert.Equal("Length", result.MeasurementType);
     }
@@ -121,7 +141,8 @@ public class ServiceLayerTest
     {
         var quantity = new QuantityDTO(1.0, "KILOGRAM", "Weight");
         var result = _service.Convert(quantity, "GRAM");
-        Assert.Equal(1000.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(1000.0, result.Result, 6);
         Assert.Equal("GRAM", result.Unit);
     }
 
@@ -130,7 +151,8 @@ public class ServiceLayerTest
     {
         var quantity = new QuantityDTO(1.0, "LITRE", "Volume");
         var result = _service.Convert(quantity, "MILLILITRE");
-        Assert.Equal(1000.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(1000.0, result.Result, 6);
         Assert.Equal("MILLILITRE", result.Unit);
     }
 
@@ -139,7 +161,8 @@ public class ServiceLayerTest
     {
         var quantity = new QuantityDTO(100.0, "CELSIUS", "Temperature");
         var result = _service.Convert(quantity, "FAHRENHEIT");
-        Assert.Equal(212.0, result.Value, 4);
+        Assert.NotNull(result);
+        Assert.Equal(212.0, result.Result, 4);
         Assert.Equal("FAHRENHEIT", result.Unit);
     }
 
@@ -149,14 +172,14 @@ public class ServiceLayerTest
         var quantity = new QuantityDTO(1.0, "FEET", "Length");
         _service.Convert(quantity, "INCH");
         Assert.Equal(1, _mockRepo.GetTotalCount());
-        Assert.Equal("Convert", _mockRepo.GetAllMeasurements()[0].OperationType);
+        Assert.Equal("CONVERT", _mockRepo.GetAllMeasurements()[0].OperationType);
     }
 
     [Fact]
     public void TestConvert_UnknownUnit_ThrowsNotSupportedException()
     {
         var quantity = new QuantityDTO(1.0, "FEET", "Length");
-        Assert.Throws<NotSupportedException>(() => _service.Convert(quantity, "MILES"));
+        Assert.Throws<InvalidUnitException>(() => _service.Convert(quantity, "MILES"));
     }
 
     // ==================== Add Tests ====================
@@ -167,7 +190,8 @@ public class ServiceLayerTest
         var first = new QuantityDTO(1.0, "FEET", "Length");
         var second = new QuantityDTO(12.0, "INCH", "Length");
         var result = _service.Add(first, second);
-        Assert.Equal(2.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(2.0, result.Result, 6);
         Assert.Equal("Length", result.MeasurementType);
     }
 
@@ -177,7 +201,8 @@ public class ServiceLayerTest
         var first = new QuantityDTO(1.0, "KILOGRAM", "Weight");
         var second = new QuantityDTO(1000.0, "GRAM", "Weight");
         var result = _service.Add(first, second);
-        Assert.Equal(2.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(2.0, result.Result, 6);
     }
 
     [Fact]
@@ -186,7 +211,8 @@ public class ServiceLayerTest
         var first = new QuantityDTO(1.0, "LITRE", "Volume");
         var second = new QuantityDTO(1000.0, "MILLILITRE", "Volume");
         var result = _service.Add(first, second);
-        Assert.Equal(2.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(2.0, result.Result, 6);
     }
 
     [Fact]
@@ -194,7 +220,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(100.0, "CELSIUS", "Temperature");
         var second = new QuantityDTO(50.0, "CELSIUS", "Temperature");
-        Assert.Throws<NotSupportedException>(() => _service.Add(first, second));
+        Assert.Throws<UnsupportedOperationException>(() => _service.Add(first, second));
     }
 
     [Fact]
@@ -202,7 +228,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(1.0, "FEET", "Length");
         var second = new QuantityDTO(1.0, "KILOGRAM", "Weight");
-        Assert.Throws<ArgumentException>(() => _service.Add(first, second));
+        Assert.Throws<MeasurementTypeMismatchException>(() => _service.Add(first, second));
     }
 
     [Fact]
@@ -212,7 +238,7 @@ public class ServiceLayerTest
         var second = new QuantityDTO(12.0, "INCH", "Length");
         _service.Add(first, second);
         Assert.Equal(1, _mockRepo.GetTotalCount());
-        Assert.Equal("Add", _mockRepo.GetAllMeasurements()[0].OperationType);
+        Assert.Equal("ADD", _mockRepo.GetAllMeasurements()[0].OperationType);
     }
 
     // ==================== Subtract Tests ====================
@@ -223,7 +249,8 @@ public class ServiceLayerTest
         var first = new QuantityDTO(10.0, "FEET", "Length");
         var second = new QuantityDTO(6.0, "INCH", "Length");
         var result = _service.Subtract(first, second);
-        Assert.Equal(9.5, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(9.5, result.Result, 6);
     }
 
     [Fact]
@@ -232,7 +259,8 @@ public class ServiceLayerTest
         var first = new QuantityDTO(10.0, "KILOGRAM", "Weight");
         var second = new QuantityDTO(5000.0, "GRAM", "Weight");
         var result = _service.Subtract(first, second);
-        Assert.Equal(5.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(5.0, result.Result, 6);
     }
 
     [Fact]
@@ -241,7 +269,8 @@ public class ServiceLayerTest
         var first = new QuantityDTO(5.0, "LITRE", "Volume");
         var second = new QuantityDTO(2.0, "LITRE", "Volume");
         var result = _service.Subtract(first, second);
-        Assert.Equal(3.0, result.Value, 6);
+        Assert.NotNull(result);
+        Assert.Equal(3.0, result.Result, 6);
     }
 
     [Fact]
@@ -249,7 +278,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(100.0, "CELSIUS", "Temperature");
         var second = new QuantityDTO(50.0, "CELSIUS", "Temperature");
-        Assert.Throws<NotSupportedException>(() => _service.Subtract(first, second));
+        Assert.Throws<UnsupportedOperationException>(() => _service.Subtract(first, second));
     }
 
     [Fact]
@@ -259,7 +288,7 @@ public class ServiceLayerTest
         var second = new QuantityDTO(6.0, "INCH", "Length");
         _service.Subtract(first, second);
         Assert.Equal(1, _mockRepo.GetTotalCount());
-        Assert.Equal("Subtract", _mockRepo.GetAllMeasurements()[0].OperationType);
+        Assert.Equal("SUBTRACT", _mockRepo.GetAllMeasurements()[0].OperationType);
     }
 
     // ==================== Divide Tests ====================
@@ -269,7 +298,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(10.0, "FEET", "Length");
         var second = new QuantityDTO(5.0, "FEET", "Length");
-        Assert.Equal(2.0, _service.Divide(first, second), 6);
+        var result = _service.Divide(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(2.0, result.Result, 6);
     }
 
     [Fact]
@@ -277,7 +308,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(10.0, "KILOGRAM", "Weight");
         var second = new QuantityDTO(5.0, "KILOGRAM", "Weight");
-        Assert.Equal(2.0, _service.Divide(first, second), 6);
+        var result = _service.Divide(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(2.0, result.Result, 6);
     }
 
     [Fact]
@@ -285,7 +318,9 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(10.0, "LITRE", "Volume");
         var second = new QuantityDTO(5.0, "LITRE", "Volume");
-        Assert.Equal(2.0, _service.Divide(first, second), 6);
+        var result = _service.Divide(first, second);
+        Assert.NotNull(result);
+        Assert.Equal(2.0, result.Result, 6);
     }
 
     [Fact]
@@ -293,7 +328,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(100.0, "CELSIUS", "Temperature");
         var second = new QuantityDTO(50.0, "CELSIUS", "Temperature");
-        Assert.Throws<NotSupportedException>(() => _service.Divide(first, second));
+        Assert.Throws<UnsupportedOperationException>(() => _service.Divide(first, second));
     }
 
     [Fact]
@@ -301,7 +336,7 @@ public class ServiceLayerTest
     {
         var first = new QuantityDTO(10.0, "FEET", "Length");
         var second = new QuantityDTO(5.0, "KILOGRAM", "Weight");
-        Assert.Throws<ArgumentException>(() => _service.Divide(first, second));
+        Assert.Throws<MeasurementTypeMismatchException>(() => _service.Divide(first, second));
     }
 
     [Fact]
@@ -311,7 +346,7 @@ public class ServiceLayerTest
         var second = new QuantityDTO(5.0, "FEET", "Length");
         _service.Divide(first, second);
         Assert.Equal(1, _mockRepo.GetTotalCount());
-        Assert.Equal("Divide", _mockRepo.GetAllMeasurements()[0].OperationType);
+        Assert.Equal("DIVIDE", _mockRepo.GetAllMeasurements()[0].OperationType);
     }
 
     // ==================== Repository Persistence Tests ====================
@@ -341,9 +376,9 @@ public class ServiceLayerTest
         _service.Convert(length1, "INCH");
         _service.Add(length1, length2);
 
-        Assert.Single(_mockRepo.GetMeasurementsByOperation("Compare"));
-        Assert.Single(_mockRepo.GetMeasurementsByOperation("Convert"));
-        Assert.Single(_mockRepo.GetMeasurementsByOperation("Add"));
+        Assert.Single(_mockRepo.GetMeasurementsByOperation("COMPARE"));
+        Assert.Single(_mockRepo.GetMeasurementsByOperation("CONVERT"));
+        Assert.Single(_mockRepo.GetMeasurementsByOperation("ADD"));
     }
 
     [Fact]

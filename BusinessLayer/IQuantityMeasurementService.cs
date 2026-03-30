@@ -1,21 +1,19 @@
-using ModelLayer.Models;
+using ModelLayer.DTOs;
 
 namespace BusinessLayer.Services;
 
 public interface IQuantityMeasurementService
 {
-    // Compare two quantities
-    bool Compare(QuantityDTO first, QuantityDTO second);
+    // ─── Core Operations (UC17: return QuantityMeasurementDTO) ───────────────
+    QuantityMeasurementDTO Compare(QuantityDTO first, QuantityDTO second);
+    QuantityMeasurementDTO Convert(QuantityDTO quantity, string targetUnit);
+    QuantityMeasurementDTO Add(QuantityDTO first, QuantityDTO second);
+    QuantityMeasurementDTO Subtract(QuantityDTO first, QuantityDTO second);
+    QuantityMeasurementDTO Divide(QuantityDTO first, QuantityDTO second);
 
-    // Convert one quantity to another unit
-    QuantityDTO Convert(QuantityDTO quantity, string targetUnit);
-
-    // Add two quantities
-    QuantityDTO Add(QuantityDTO first, QuantityDTO second);
-
-    // Subtract two quantities
-    QuantityDTO Subtract(QuantityDTO first, QuantityDTO second);
-
-    // Divide two quantities
-    double Divide(QuantityDTO first, QuantityDTO second);
+    // ─── UC17: Data Retrieval Methods ────────────────────────────────────────
+    List<QuantityMeasurementDTO> GetMeasurementsByType(string measurementType);
+    List<QuantityMeasurementDTO> GetMeasurementsByOperation(string operationType);
+    int GetOperationCount(string operationType);
+    List<QuantityMeasurementDTO> GetErrorMeasurements();
 }

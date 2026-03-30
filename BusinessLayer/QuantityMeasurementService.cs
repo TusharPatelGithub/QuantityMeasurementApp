@@ -1,4 +1,7 @@
 using ModelLayer.Models;
+using ModelLayer.Enums;
+using ModelLayer.DTOs;
+using ModelLayer.Interfaces;
 
 namespace BusinessLayer.Services;
 
@@ -128,3 +131,4 @@ public double DivideQuantityMeasurements<U>(Quantity<U> first, Quantity<U> secon
     return first.Divide(second);
 }
 }
+

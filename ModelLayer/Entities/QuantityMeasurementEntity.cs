@@ -1,12 +1,10 @@
-using ModelLayer.Models;
-
 namespace ModelLayer.Entities;
 
 public class QuantityMeasurementEntity
 {
     public int Id { get; set; }
     public string MeasurementType { get; set; } = string.Empty;
-    public string OperationType { get; set; }   = string.Empty;
+    public string OperationType   { get; set; } = string.Empty;
     public double Value1 { get; set; }
     public double Value2 { get; set; }
     public double Result { get; set; }

@@ -20,16 +20,16 @@ namespace RepositoryLayer.DatabaseRepository
 
         public void SaveMeasurement(QuantityMeasurementEntity entity)
         {
-            _logger.LogInformation("Saving measurement: Type={Type}, Operation={Op}, Value1={V1}, Value2={V2}, Result={R}, Unit={U}",
+            _logger.LogInformation("Saving measurement: Type={Type}, Op={Op}, V1={V1}, V2={V2}, Result={R}, Unit={U}, IsError={E}",
                 entity.MeasurementType, entity.OperationType,
-                entity.Value1, entity.Value2, entity.Result, entity.Unit);
+                entity.Value1, entity.Value2, entity.Result, entity.Unit, entity.HasError);
 
             using (SqlConnection connection = DatabaseConfig.GetConnection())
             {
                 string query = @"INSERT INTO Measurements
-                                (MeasurementType, OperationType, Value1, Value2, Result, Unit, CreatedAt)
+                                (MeasurementType, OperationType, Value1, Value2, Result, Unit, CreatedAt, IsError, ErrorMessage)
                                 VALUES
-                                (@MeasurementType, @OperationType, @Value1, @Value2, @Result, @Unit, @CreatedAt)";
+                                (@MeasurementType, @OperationType, @Value1, @Value2, @Result, @Unit, @CreatedAt, @IsError, @ErrorMessage)";
 
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@MeasurementType", entity.MeasurementType);
@@ -39,6 +39,8 @@ namespace RepositoryLayer.DatabaseRepository
                 command.Parameters.AddWithValue("@Result",          entity.Result);
                 command.Parameters.AddWithValue("@Unit",            entity.Unit);
                 command.Parameters.AddWithValue("@CreatedAt",       entity.CreatedAt);
+                command.Parameters.AddWithValue("@IsError",         entity.HasError);
+                command.Parameters.AddWithValue("@ErrorMessage",    (object?)entity.ErrorMessage ?? DBNull.Value);
 
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -58,7 +60,9 @@ namespace RepositoryLayer.DatabaseRepository
                 Value2          = Convert.ToDouble(reader["Value2"]),
                 Result          = Convert.ToDouble(reader["Result"]),
                 Unit            = reader["Unit"].ToString()            ?? "",
-                CreatedAt       = Convert.ToDateTime(reader["CreatedAt"])
+                CreatedAt       = Convert.ToDateTime(reader["CreatedAt"]),
+                HasError        = reader["IsError"] != DBNull.Value && Convert.ToBoolean(reader["IsError"]),
+                ErrorMessage    = reader["ErrorMessage"] == DBNull.Value ? null : reader["ErrorMessage"].ToString()
             };
         }
 
@@ -136,6 +140,40 @@ namespace RepositoryLayer.DatabaseRepository
                     measurements.Add(MapReader(reader));
             }
             _logger.LogInformation("Retrieved {Count} measurements of operation {Op}.", measurements.Count, operationType);
+            return measurements;
+        }
+
+        // ─── UC17: New Methods ────────────────────────────────────────────────
+
+        public int CountByOperation(string operationType)
+        {
+            _logger.LogInformation("Counting successful operations of type: {Op}", operationType);
+            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            {
+                SqlCommand command = new SqlCommand(
+                    "SELECT COUNT(*) FROM Measurements WHERE OperationType = @OperationType AND IsError = 0", connection);
+                command.Parameters.AddWithValue("@OperationType", operationType);
+                connection.Open();
+                int count = (int)command.ExecuteScalar();
+                _logger.LogInformation("Count for operation {Op}: {Count}", operationType, count);
+                return count;
+            }
+        }
+
+        public List<QuantityMeasurementEntity> GetErrorMeasurements()
+        {
+            _logger.LogInformation("Retrieving all error measurements.");
+            var measurements = new List<QuantityMeasurementEntity>();
+            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            {
+                SqlCommand command = new SqlCommand(
+                    "SELECT * FROM Measurements WHERE IsError = 1", connection);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                    measurements.Add(MapReader(reader));
+            }
+            _logger.LogInformation("Retrieved {Count} error measurements.", measurements.Count);
             return measurements;
         }
     }

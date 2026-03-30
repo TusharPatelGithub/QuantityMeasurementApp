@@ -1,4 +1,7 @@
 using ModelLayer.Models;
+using ModelLayer.Enums;
+using ModelLayer.DTOs;
+using ModelLayer.Interfaces;
 using BusinessLayer.Services;
 namespace QuantityMeasurement.Tests
 {

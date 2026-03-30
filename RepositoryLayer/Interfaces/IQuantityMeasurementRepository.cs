@@ -11,5 +11,10 @@ namespace RepositoryLayer.Interfaces
         List<QuantityMeasurementEntity> GetMeasurementsByType(string measurementType);
         int GetTotalCount();
         void DeleteAll();
+
+        // UC17: New methods
+        int CountByOperation(string operationType);
+        List<QuantityMeasurementEntity> GetErrorMeasurements();
     }
 }
+

@@ -1,27 +1,40 @@
 using BusinessLayer.Services;
-using Microsoft.Extensions.Logging;
-using QuantityMeasurementApp.Controllers;
+using RepositoryLayer.Interfaces;
 using RepositoryLayer.DatabaseRepository;
+using QuantityMeasurementApp.Middleware;
 
-namespace QuantityMeasurementApp;
+var builder = WebApplication.CreateBuilder(args);
 
-class Program
+// Add services to the container
+builder.Services.AddScoped<IQuantityMeasurementRepository, QuantityMeasurementDatabaseRepository>();
+builder.Services.AddScoped<IQuantityMeasurementService, QuantityMeasurementServiceImpl>();
+builder.Services.AddScoped<GlobalExceptionHandler>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    static void Main(string[] args)
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        using ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.SetMinimumLevel(LogLevel.Warning).AddConsole();
-        });
+        Title = "Quantity Measurement API",
+        Version = "v1",
+        Description = "REST API for performing quantity measurement operations"
+    });
+});
 
-        var repoLogger    = loggerFactory.CreateLogger<QuantityMeasurementDatabaseRepository>();
-        var serviceLogger = loggerFactory.CreateLogger<QuantityMeasurementServiceImpl>();
+var app = builder.Build();
 
-        var repository  = new QuantityMeasurementDatabaseRepository(repoLogger);
-        var service     = new QuantityMeasurementServiceImpl(repository, serviceLogger);
-        var controller  = new QuantityMeasurementController(service);
+// Configure the HTTP request pipeline
+app.UseMiddleware<GlobalExceptionHandler>();
 
-        var menu = new Menu(controller, repository);
-        menu.Run();
-    }
-}
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Quantity Measurement API v1"));
+
+app.UseRouting();
+app.MapControllers();
+
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
+app.Run();
+
+public partial class Program { }
