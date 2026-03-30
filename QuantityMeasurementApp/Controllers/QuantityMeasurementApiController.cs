@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BusinessLayer.Services;
 using ModelLayer.DTOs;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuantityMeasurementApp.Controllers;
 
@@ -12,6 +13,7 @@ namespace QuantityMeasurementApp.Controllers;
 [ApiController]
 [Route("api/v1/quantities")]
 [Produces("application/json")]
+[Authorize]
 public class QuantityMeasurementApiController : ControllerBase
 {
     private readonly IQuantityMeasurementService _service;
