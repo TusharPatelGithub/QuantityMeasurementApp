@@ -20,7 +20,7 @@ namespace RepositoryLayer.DatabaseRepository
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var cmd = new SqlCommand("SELECT Id, Email, PasswordHash, GoogleId FROM Users WHERE Email = @email", connection);
+                var cmd = new SqlCommand("SELECT Id, FullName, Email, PasswordHash, MobileNumber, GoogleId FROM Users WHERE Email = @email", connection);
                 cmd.Parameters.AddWithValue("@email", email);
 
                 connection.Open();
@@ -30,10 +30,12 @@ namespace RepositoryLayer.DatabaseRepository
                     {
                         return new AppUser
                         {
-                            Id = reader.GetInt32(0),
-                            Email = reader.GetString(1),
-                            PasswordHash = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                            GoogleId = reader.IsDBNull(3) ? null : reader.GetString(3)
+                            Id           = reader.GetInt32(0),
+                            FullName     = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                            Email        = reader.GetString(2),
+                            PasswordHash = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                            MobileNumber = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                            GoogleId     = reader.IsDBNull(5) ? null : reader.GetString(5)
                         };
                     }
                 }
@@ -45,7 +47,7 @@ namespace RepositoryLayer.DatabaseRepository
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                var cmd = new SqlCommand("SELECT Id, Email, PasswordHash, GoogleId FROM Users WHERE GoogleId = @googleId", connection);
+                var cmd = new SqlCommand("SELECT Id, FullName, Email, PasswordHash, MobileNumber, GoogleId FROM Users WHERE GoogleId = @googleId", connection);
                 cmd.Parameters.AddWithValue("@googleId", googleId);
 
                 connection.Open();
@@ -55,10 +57,12 @@ namespace RepositoryLayer.DatabaseRepository
                     {
                         return new AppUser
                         {
-                            Id = reader.GetInt32(0),
-                            Email = reader.GetString(1),
-                            PasswordHash = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                            GoogleId = reader.IsDBNull(3) ? null : reader.GetString(3)
+                            Id           = reader.GetInt32(0),
+                            FullName     = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                            Email        = reader.GetString(2),
+                            PasswordHash = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                            MobileNumber = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                            GoogleId     = reader.IsDBNull(5) ? null : reader.GetString(5)
                         };
                     }
                 }
@@ -71,12 +75,14 @@ namespace RepositoryLayer.DatabaseRepository
             using (var connection = new SqlConnection(_connectionString))
             {
                 var cmd = new SqlCommand(
-                    "INSERT INTO Users (Email, PasswordHash, GoogleId) OUTPUT INSERTED.Id VALUES (@email, @pwd, @googleId)", 
+                    "INSERT INTO Users (FullName, Email, PasswordHash, MobileNumber, GoogleId) OUTPUT INSERTED.Id VALUES (@fullName, @email, @pwd, @mobileNumber, @googleId)",
                     connection);
-                
-                cmd.Parameters.AddWithValue("@email", user.Email);
-                cmd.Parameters.AddWithValue("@pwd", user.PasswordHash);
-                cmd.Parameters.AddWithValue("@googleId", string.IsNullOrEmpty(user.GoogleId) ? (object)DBNull.Value : user.GoogleId);
+
+                cmd.Parameters.AddWithValue("@fullName",     user.FullName);
+                cmd.Parameters.AddWithValue("@email",        user.Email);
+                cmd.Parameters.AddWithValue("@pwd",          user.PasswordHash);
+                cmd.Parameters.AddWithValue("@mobileNumber", user.MobileNumber);
+                cmd.Parameters.AddWithValue("@googleId",     string.IsNullOrEmpty(user.GoogleId) ? (object)DBNull.Value : user.GoogleId);
 
                 connection.Open();
                 var result = cmd.ExecuteScalar();

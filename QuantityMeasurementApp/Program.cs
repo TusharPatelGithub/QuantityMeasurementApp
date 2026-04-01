@@ -39,6 +39,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// CORS: allow frontend on Live Server to call the API
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                "http://127.0.0.1:5500",
+                "http://localhost:5500",
+                "null")           // file:// requests send Origin: null
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -79,6 +93,7 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+app.UseCors("AllowFrontend");
 app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseAuthentication();

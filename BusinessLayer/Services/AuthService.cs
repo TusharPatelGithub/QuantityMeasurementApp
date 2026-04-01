@@ -32,8 +32,10 @@ namespace BusinessLayer.Services
 
             var user = new AppUser
             {
-                Email = registerDto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password)
+                FullName     = registerDto.FullName,
+                Email        = registerDto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
+                MobileNumber = registerDto.MobileNumber
             };
 
             var userId = _userRepository.CreateUser(user);
