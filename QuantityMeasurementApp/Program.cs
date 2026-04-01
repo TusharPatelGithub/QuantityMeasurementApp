@@ -93,6 +93,7 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+app.UseRouting();
 app.UseCors("AllowFrontend");
 app.UseMiddleware<GlobalExceptionHandler>();
 
@@ -102,7 +103,6 @@ app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Quantity Measurement API v1"));
 
-app.UseRouting();
 app.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
