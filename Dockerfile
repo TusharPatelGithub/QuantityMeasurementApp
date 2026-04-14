@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY *.sln .
 COPY QuantityMeasurementApp/*.csproj ./QuantityMeasurementApp/
+COPY QuantityMeasurement/*.csproj ./QuantityMeasurement/
 COPY BusinessLayer/*.csproj ./BusinessLayer/
 COPY ModelLayer/*.csproj ./ModelLayer/
 COPY RepositoryLayer/*.csproj ./RepositoryLayer/
