@@ -7,6 +7,7 @@ COPY QuantityMeasurementApp/*.csproj ./QuantityMeasurementApp/
 COPY BusinessLayer/*.csproj ./BusinessLayer/
 COPY ModelLayer/*.csproj ./ModelLayer/
 COPY RepositoryLayer/*.csproj ./RepositoryLayer/
+COPY QuantityMeasurement.Tests/*.csproj ./QuantityMeasurement.Tests/
 RUN dotnet restore
 
 COPY . .
