@@ -1,4 +1,4 @@
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using Microsoft.Extensions.Configuration;
 
 namespace RepositoryLayer.Configuration
@@ -46,12 +46,12 @@ namespace RepositoryLayer.Configuration
 
         private static string GetFallbackConnectionString()
         {
-            return "Server=localhost\\SQLEXPRESS;Database=QuantityMeasurementDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            return "Host=localhost;Port=5432;Database=QuantityMeasurementDB;Username=postgres;Password=postgres";
         }
 
-        public static SqlConnection GetConnection()
+        public static NpgsqlConnection GetConnection()
         {
-            return new SqlConnection(_connectionString);
+            return new NpgsqlConnection(_connectionString);
         }
 
         public static string GetConnectionString() => _connectionString;

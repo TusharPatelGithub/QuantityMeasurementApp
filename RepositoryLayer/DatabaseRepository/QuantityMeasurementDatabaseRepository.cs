@@ -1,5 +1,5 @@
 using ModelLayer.Entities;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using Microsoft.Extensions.Logging;
 using RepositoryLayer.Interfaces;
 using RepositoryLayer.Configuration;
@@ -24,14 +24,14 @@ namespace RepositoryLayer.DatabaseRepository
                 entity.MeasurementType, entity.OperationType,
                 entity.Value1, entity.Value2, entity.Result, entity.Unit, entity.HasError);
 
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                string query = @"INSERT INTO Measurements
-                                (MeasurementType, OperationType, Value1, Value2, Result, Unit, CreatedAt, IsError, ErrorMessage)
+                string query = @"INSERT INTO ""Measurements""
+                                (""MeasurementType"", ""OperationType"", ""Value1"", ""Value2"", ""Result"", ""Unit"", ""CreatedAt"", ""IsError"", ""ErrorMessage"")
                                 VALUES
                                 (@MeasurementType, @OperationType, @Value1, @Value2, @Result, @Unit, @CreatedAt, @IsError, @ErrorMessage)";
 
-                SqlCommand command = new SqlCommand(query, connection);
+                NpgsqlCommand command = new NpgsqlCommand(query, connection);
                 command.Parameters.AddWithValue("@MeasurementType", entity.MeasurementType);
                 command.Parameters.AddWithValue("@OperationType",   entity.OperationType);
                 command.Parameters.AddWithValue("@Value1",          entity.Value1);
@@ -49,7 +49,7 @@ namespace RepositoryLayer.DatabaseRepository
             _logger.LogInformation("Measurement saved successfully.");
         }
 
-        private static QuantityMeasurementEntity MapReader(SqlDataReader reader)
+        private static QuantityMeasurementEntity MapReader(NpgsqlDataReader reader)
         {
             return new QuantityMeasurementEntity
             {
@@ -70,11 +70,11 @@ namespace RepositoryLayer.DatabaseRepository
         {
             _logger.LogInformation("Retrieving all measurements.");
             var measurements = new List<QuantityMeasurementEntity>();
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand("SELECT * FROM Measurements", connection);
+                NpgsqlCommand command = new NpgsqlCommand("SELECT * FROM \"Measurements\"", connection);
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                     measurements.Add(MapReader(reader));
             }
@@ -85,22 +85,22 @@ namespace RepositoryLayer.DatabaseRepository
         public int GetTotalCount()
         {
             _logger.LogInformation("Getting total measurement count.");
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM Measurements", connection);
+                NpgsqlCommand command = new NpgsqlCommand("SELECT COUNT(*) FROM \"Measurements\"", connection);
                 connection.Open();
-                int count = (int)command.ExecuteScalar();
+                long count = (long)command.ExecuteScalar()!;
                 _logger.LogInformation("Total count: {Count}", count);
-                return count;
+                return (int)count;
             }
         }
 
         public void DeleteAll()
         {
             _logger.LogWarning("Deleting all measurements from database.");
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand("DELETE FROM Measurements", connection);
+                NpgsqlCommand command = new NpgsqlCommand("DELETE FROM \"Measurements\"", connection);
                 connection.Open();
                 command.ExecuteNonQuery();
             }
@@ -111,13 +111,13 @@ namespace RepositoryLayer.DatabaseRepository
         {
             _logger.LogInformation("Retrieving measurements by type: {Type}", measurementType);
             var measurements = new List<QuantityMeasurementEntity>();
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand(
-                    "SELECT * FROM Measurements WHERE MeasurementType = @MeasurementType", connection);
+                NpgsqlCommand command = new NpgsqlCommand(
+                    "SELECT * FROM \"Measurements\" WHERE \"MeasurementType\" = @MeasurementType", connection);
                 command.Parameters.AddWithValue("@MeasurementType", measurementType);
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                     measurements.Add(MapReader(reader));
             }
@@ -129,13 +129,13 @@ namespace RepositoryLayer.DatabaseRepository
         {
             _logger.LogInformation("Retrieving measurements by operation: {Op}", operationType);
             var measurements = new List<QuantityMeasurementEntity>();
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand(
-                    "SELECT * FROM Measurements WHERE OperationType = @OperationType", connection);
+                NpgsqlCommand command = new NpgsqlCommand(
+                    "SELECT * FROM \"Measurements\" WHERE \"OperationType\" = @OperationType", connection);
                 command.Parameters.AddWithValue("@OperationType", operationType);
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                     measurements.Add(MapReader(reader));
             }
@@ -148,15 +148,17 @@ namespace RepositoryLayer.DatabaseRepository
         public int CountByOperation(string operationType)
         {
             _logger.LogInformation("Counting successful operations of type: {Op}", operationType);
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand(
-                    "SELECT COUNT(*) FROM Measurements WHERE OperationType = @OperationType AND IsError = 0", connection);
+                NpgsqlCommand command = new NpgsqlCommand(
+                    // PostgreSQL uses boolean literals true/false instead of MSSQL's 1/0
+                    "SELECT COUNT(*) FROM \"Measurements\" WHERE \"OperationType\" = @OperationType AND \"IsError\" = false",
+                    connection);
                 command.Parameters.AddWithValue("@OperationType", operationType);
                 connection.Open();
-                int count = (int)command.ExecuteScalar();
+                long count = (long)command.ExecuteScalar()!;
                 _logger.LogInformation("Count for operation {Op}: {Count}", operationType, count);
-                return count;
+                return (int)count;
             }
         }
 
@@ -164,12 +166,14 @@ namespace RepositoryLayer.DatabaseRepository
         {
             _logger.LogInformation("Retrieving all error measurements.");
             var measurements = new List<QuantityMeasurementEntity>();
-            using (SqlConnection connection = DatabaseConfig.GetConnection())
+            using (NpgsqlConnection connection = DatabaseConfig.GetConnection())
             {
-                SqlCommand command = new SqlCommand(
-                    "SELECT * FROM Measurements WHERE IsError = 1", connection);
+                NpgsqlCommand command = new NpgsqlCommand(
+                    // PostgreSQL uses boolean literals true/false instead of MSSQL's 1
+                    "SELECT * FROM \"Measurements\" WHERE \"IsError\" = true",
+                    connection);
                 connection.Open();
-                SqlDataReader reader = command.ExecuteReader();
+                NpgsqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                     measurements.Add(MapReader(reader));
             }

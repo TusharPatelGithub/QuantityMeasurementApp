@@ -47,6 +47,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://127.0.0.1:5500",
                 "http://localhost:5500",
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
                 "null")           // file:// requests send Origin: null
               .AllowAnyHeader()
               .AllowAnyMethod();
@@ -110,3 +112,5 @@ app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 app.Run();
 
 public partial class Program { }
+
+

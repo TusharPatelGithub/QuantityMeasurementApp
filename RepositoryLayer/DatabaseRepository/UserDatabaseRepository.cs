@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using System.Data;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using ModelLayer.Models;
 using RepositoryLayer.Interfaces;
 
@@ -18,9 +18,11 @@ namespace RepositoryLayer.DatabaseRepository
 
         public AppUser? GetUserByEmail(string email)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
-                var cmd = new SqlCommand("SELECT Id, FullName, Email, PasswordHash, MobileNumber, GoogleId FROM Users WHERE Email = @email", connection);
+                var cmd = new NpgsqlCommand(
+                    "SELECT \"Id\", \"FullName\", \"Email\", \"PasswordHash\", \"MobileNumber\", \"GoogleId\" FROM \"Users\" WHERE \"Email\" = @email",
+                    connection);
                 cmd.Parameters.AddWithValue("@email", email);
 
                 connection.Open();
@@ -45,9 +47,11 @@ namespace RepositoryLayer.DatabaseRepository
 
         public AppUser? GetUserByGoogleId(string googleId)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
-                var cmd = new SqlCommand("SELECT Id, FullName, Email, PasswordHash, MobileNumber, GoogleId FROM Users WHERE GoogleId = @googleId", connection);
+                var cmd = new NpgsqlCommand(
+                    "SELECT \"Id\", \"FullName\", \"Email\", \"PasswordHash\", \"MobileNumber\", \"GoogleId\" FROM \"Users\" WHERE \"GoogleId\" = @googleId",
+                    connection);
                 cmd.Parameters.AddWithValue("@googleId", googleId);
 
                 connection.Open();
@@ -72,10 +76,11 @@ namespace RepositoryLayer.DatabaseRepository
 
         public int CreateUser(AppUser user)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
-                var cmd = new SqlCommand(
-                    "INSERT INTO Users (FullName, Email, PasswordHash, MobileNumber, GoogleId) OUTPUT INSERTED.Id VALUES (@fullName, @email, @pwd, @mobileNumber, @googleId)",
+                // PostgreSQL uses RETURNING instead of MSSQL's OUTPUT INSERTED.Id
+                var cmd = new NpgsqlCommand(
+                    "INSERT INTO \"Users\" (\"FullName\", \"Email\", \"PasswordHash\", \"MobileNumber\", \"GoogleId\") VALUES (@fullName, @email, @pwd, @mobileNumber, @googleId) RETURNING \"Id\"",
                     connection);
 
                 cmd.Parameters.AddWithValue("@fullName",     user.FullName);
