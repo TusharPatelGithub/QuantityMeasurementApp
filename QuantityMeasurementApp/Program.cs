@@ -110,6 +110,38 @@ app.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
+// Auto-create tables on startup
+using (var scope = app.Services.CreateScope())
+{
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var connStr = config.GetConnectionString("DefaultConnection");
+    using var conn = new Npgsql.NpgsqlConnection(connStr);
+    conn.Open();
+    using var cmd = conn.CreateCommand();
+    cmd.CommandText = @"
+        CREATE TABLE IF NOT EXISTS ""Measurements"" (
+            ""Id""              SERIAL PRIMARY KEY,
+            ""MeasurementType"" VARCHAR(100)   NOT NULL,
+            ""OperationType""   VARCHAR(100)   NOT NULL,
+            ""Value1""          DOUBLE PRECISION NOT NULL,
+            ""Value2""          DOUBLE PRECISION NOT NULL,
+            ""Result""          DOUBLE PRECISION NOT NULL,
+            ""Unit""            VARCHAR(50)    NOT NULL,
+            ""CreatedAt""       TIMESTAMP      NOT NULL DEFAULT NOW(),
+            ""IsError""         BOOLEAN        NOT NULL DEFAULT FALSE,
+            ""ErrorMessage""    VARCHAR(500)   NULL
+        );
+        CREATE TABLE IF NOT EXISTS ""Users"" (
+            ""Id""           SERIAL          PRIMARY KEY,
+            ""FullName""     VARCHAR(100)    NOT NULL DEFAULT '',
+            ""Email""        VARCHAR(256)    NOT NULL UNIQUE,
+            ""PasswordHash"" TEXT            NOT NULL DEFAULT '',
+            ""MobileNumber"" VARCHAR(10)     NOT NULL DEFAULT '',
+            ""GoogleId""     VARCHAR(256)    NULL
+        );";
+    cmd.ExecuteNonQuery();
+}
+
 app.Run();
 
 public partial class Program { }
