@@ -9,7 +9,16 @@ namespace RepositoryLayer.Configuration
 
         static DatabaseConfig()
         {
-            // Walk up from the running assembly to find appsettings.json
+            // 1. Check environment variable first (for cloud deployments like Render)
+            //    ASP.NET Core standard: double-underscore __ maps to nested JSON keys.
+            var envConnStr = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            if (!string.IsNullOrWhiteSpace(envConnStr))
+            {
+                _connectionString = envConnStr;
+                return;
+            }
+
+            // 2. Walk up from the running assembly to find appsettings.json (for local dev)
             string basePath = AppContext.BaseDirectory;
 
             // Try to find appsettings.json walking up directories
